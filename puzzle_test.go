@@ -6,18 +6,40 @@ import (
 	"testing"
 )
 
+func benchmarkPuzzle(input []int) func(b *testing.B) {
+	return func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			p, err := NewPuzzle(input)
+			if err != nil {
+				b.Errorf("could not create puzzle: %s", err)
+				return
+			}
+			if err = p.Solve(); err != nil {
+				b.Errorf("could not create puzzle: %s", err)
+				return
+			}
+		}
+	}
+}
+
 func BenchmarkPuzzle_Solve(b *testing.B) {
-	input := []int{
+	b.Run("4x4", benchmarkPuzzle([]int{
 		0, 0, 0, 3,
 		0, 0, 0, 2,
 		3, 0, 0, 0,
 		4, 0, 0, 0,
-	}
-	for i := 0; i <= b.N; i++ {
-		p, _ := NewPuzzle(input)
-		_ = p.Solve()
-		_, _ = p.Result()
-	}
+	}))
+	b.Run("9x9", benchmarkPuzzle([]int{
+		6, 0, 0, 0, 0, 0, 1, 5, 0,
+		9, 5, 4, 7, 1, 0, 0, 8, 0,
+		0, 0, 0, 5, 0, 2, 6, 0, 0,
+		8, 0, 0, 0, 9, 4, 0, 0, 6,
+		0, 0, 3, 8, 0, 5, 4, 0, 0,
+		4, 0, 0, 3, 7, 0, 0, 0, 8,
+		0, 0, 6, 9, 0, 3, 0, 0, 0,
+		0, 2, 0, 0, 4, 7, 8, 9, 3,
+		0, 4, 9, 0, 0, 0, 0, 0, 5,
+	}))
 }
 
 func ExamplePuzzle_Solve() {
@@ -31,18 +53,23 @@ func ExamplePuzzle_Solve() {
 	_ = p.Solve()
 	res, _ := p.Result()
 
-	print4x4 := func(data []int) {
-		fmt.Printf("%d %d %d %d\n%d %d %d %d\n%d %d %d %d\n%d %d %d %d\n",
-			data[0], data[1], data[2], data[3],
-			data[4], data[5], data[6], data[7],
-			data[8], data[9], data[10], data[11],
-			data[12], data[13], data[14], data[15])
+	printItems := func(data []int) {
+		formatted, _ := FormatPuzzle(data)
+		for _, line := range formatted {
+			for k, cell := range line {
+				fmt.Printf("%d", cell)
+				if k != len(line)-1 {
+					fmt.Printf(" ")
+				}
+			}
+			fmt.Printf("\n")
+		}
 	}
-	print4x4(input)
+	printItems(input)
 	fmt.Println("-------")
-	print4x4(res)
+	printItems(res)
 
-	// output:
+	// Output:
 	// 0 0 0 3
 	// 0 0 0 2
 	// 3 0 0 0
@@ -235,4 +262,131 @@ func TestPuzzle_Solve(t *testing.T) {
 			t.Run(fmt.Sprint(k), run(tc.In, tc.Exp))
 		}
 	})
+}
+
+func testCalculatePuzzleSize(input []int, exp int) func(t *testing.T) {
+	return func(t *testing.T) {
+		got, err := CalculatePuzzleSize(input)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+			return
+		}
+		if exp != got {
+			t.Errorf("expected %d, got %d", exp, got)
+			return
+		}
+	}
+}
+
+func TestCalculatePuzzleSize(t *testing.T) {
+	t.Run("4", testCalculatePuzzleSize([]int{
+		0, 0, 0, 0,
+		0, 0, 0, 0,
+		0, 0, 0, 0,
+		0, 0, 0, 0,
+	}, 4))
+	t.Run("9", testCalculatePuzzleSize([]int{
+		0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0,
+	}, 9))
+	t.Run("16", testCalculatePuzzleSize([]int{
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	}, 16))
+}
+
+func testCalculateSectionSize(input []int, exp int) func(t *testing.T) {
+	return func(t *testing.T) {
+		got, err := CalculateSectionSize(input, 0)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+			return
+		}
+		if exp != got {
+			t.Errorf("expected %d, got %d", exp, got)
+			return
+		}
+	}
+}
+
+func TestSectionPuzzleSize(t *testing.T) {
+	t.Run("2", testCalculateSectionSize([]int{
+		0, 0, 0, 0,
+		0, 0, 0, 0,
+		0, 0, 0, 0,
+		0, 0, 0, 0,
+	}, 2))
+	t.Run("3", testCalculateSectionSize([]int{
+		0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0,
+	}, 3))
+	t.Run("4", testCalculateSectionSize([]int{
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	}, 4))
+}
+
+func TestFormatPuzzle(t *testing.T) {
+	input := []int{
+		1, 2, 3, 4,
+		5, 6, 7, 8,
+		9, 10, 11, 12,
+		13, 14, 15, 16,
+	}
+	exp := [][]int{
+		{1, 2, 3, 4},
+		{5, 6, 7, 8},
+		{9, 10, 11, 12},
+		{13, 14, 15, 16},
+	}
+	got, err := FormatPuzzle(input)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err)
+	}
+	if !reflect.DeepEqual(exp, got) {
+		t.Errorf("exp: %v, got %v", exp, got)
+		return
+	}
 }

@@ -11,12 +11,21 @@ var (
 	ErrNoMoreMoves = errors.New("no more moves")
 	// ErrMissingIteration is returned when a required iteration is missing.
 	ErrMissingIteration = errors.New("missing iteration")
+	// ErrInvalidPuzzleSide is returned when the puzzle size or section size cannot be calculated.
+	ErrInvalidPuzzleSize = errors.New("invalid puzzle size")
 )
 
 // NewPuzzle returns a new puzzle.
 func NewPuzzle(items []int) (*Puzzle, error) {
-	puzzleSize := int(math.Sqrt(float64(len(items))))
-	sectionSize := int(math.Sqrt(float64(puzzleSize)))
+	puzzleSize, err := CalculatePuzzleSize(items)
+	if err != nil {
+		return nil, err
+	}
+	sectionSize, err := CalculateSectionSize(items, puzzleSize)
+	if err != nil {
+		return nil, err
+	}
+
 	firstIteration := newIteration(items, puzzleSize, sectionSize)
 	return &Puzzle{
 		puzzleSize: puzzleSize,
@@ -115,4 +124,48 @@ func (p *Puzzle) Result() ([]int, error) {
 		return nil, ErrMissingIteration
 	}
 	return p.currentIteration.items(), nil
+}
+
+// CalculatePuzzleSize calculates the size of the puzzle.
+// The puzzle size is the entire width of the puzzle.
+func CalculatePuzzleSize(items []int) (int, error) {
+	puzzleSize := int(math.Sqrt(float64(len(items))))
+	return puzzleSize, nil
+}
+
+// CalculateSectionSize calculates the size each section in the puzzle.
+func CalculateSectionSize(items []int, puzzleSize int) (int, error) {
+	if puzzleSize == 0 {
+		var err error
+		puzzleSize, err = CalculatePuzzleSize(items)
+		if err != nil {
+			return 0, err
+		}
+	}
+	sectionSize := int(math.Sqrt(float64(puzzleSize)))
+	return sectionSize, nil
+}
+
+// FormatPuzzle returns the given items as an [][]int
+// so as you can easily print the results.
+// Input: []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,}
+// Output: [][]int{
+// 	   []int{1, 2, 3, 4,},
+// 	   []int{5, 6, 7, 8,},
+// 	   []int{9, 10, 11, 12,},
+// 	   []int{13, 14, 15, 16,},
+// }
+func FormatPuzzle(items []int) ([][]int, error) {
+	puzzleSize, err := CalculatePuzzleSize(items)
+	if err != nil {
+		return nil, err
+	}
+	out := make([][]int, puzzleSize)
+	for y := 0; y < puzzleSize; y++ {
+		out[y] = make([]int, puzzleSize)
+		for x := 0; x < puzzleSize; x++ {
+			out[y][x] = items[(y*puzzleSize)+x]
+		}
+	}
+	return out, nil
 }
