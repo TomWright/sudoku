@@ -109,8 +109,6 @@ func TestPuzzle_Solve(t *testing.T) {
 	})
 
 	t.Run("9x9", func(t *testing.T) {
-		const sectionSize = 3
-		const puzzleSize = 9
 		tests := []def{
 			{
 				Exp: []int{

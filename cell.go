@@ -7,7 +7,10 @@ type cell struct {
 	index int
 }
 
-// copy returns a copy of the cell.
+// group is a group of cells.
+type group []*cell
+
+// iterate returns a iterate of the cell.
 func (c *cell) copy() *cell {
 	return &cell{
 		fixed: c.fixed,
