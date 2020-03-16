@@ -140,11 +140,10 @@ func (p *Puzzle) Solve() error {
 	p.iterationMu.Lock()
 	p.currentIteration.index = 0
 	p.iterationMu.Unlock()
+	p.attemptedIterationsMu.Lock()
+	p.attemptedIterations++
+	p.attemptedIterationsMu.Unlock()
 	for {
-		p.attemptedIterationsMu.Lock()
-		p.attemptedIterations++
-		p.attemptedIterationsMu.Unlock()
-
 		p.iterationMu.Lock()
 		currentIteration := p.currentIteration
 		p.iterationMu.Unlock()
@@ -183,6 +182,9 @@ func (p *Puzzle) Solve() error {
 				p.err = fmt.Errorf("could not revert: %w", err)
 				return p.err
 			}
+			p.attemptedIterationsMu.Lock()
+			p.attemptedIterations++
+			p.attemptedIterationsMu.Unlock()
 			continue
 
 		default:
