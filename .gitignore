@@ -3,3 +3,6 @@ vendor/
 memprofile.out
 profile.out
 sudoku.test
+sudoku
+*.puzzle
+*.puzzle.solved
