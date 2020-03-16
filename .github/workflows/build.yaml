@@ -5,23 +5,25 @@ on:
 name: Build
 jobs:
   publish:
-    name: Publish for ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         go-version: [1.13.x]
-        platform: [ubuntu-latest, windows-latest, macos-latest]
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
         include:
           - os: ubuntu-latest
             artifact_name: sudoku
             asset_name: sudoku_linux_amd64
           - os: windows-latest
             artifact_name: sudoku.exe
-            asset_name: sudoku_windows_amd64
+            asset_name: sudoku_windows_amd64.exe
           - os: macos-latest
             artifact_name: sudoku
             asset_name: sudoku_macos_amd64
-
+    name: Publish for ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v2-beta
