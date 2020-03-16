@@ -1,2 +1,5 @@
 .idea/
 vendor/
+memprofile.out
+profile.out
+sudoku.test

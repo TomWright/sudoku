@@ -6,6 +6,20 @@ import (
 	"testing"
 )
 
+func BenchmarkPuzzle_Solve(b *testing.B) {
+	input := []int{
+		0, 0, 0, 3,
+		0, 0, 0, 2,
+		3, 0, 0, 0,
+		4, 0, 0, 0,
+	}
+	for i := 0; i <= b.N; i++ {
+		p, _ := NewPuzzle(input)
+		_ = p.Solve()
+		_, _ = p.Result()
+	}
+}
+
 func ExamplePuzzle_Solve() {
 	input := []int{
 		0, 0, 0, 3,
