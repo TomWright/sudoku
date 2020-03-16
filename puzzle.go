@@ -9,11 +9,11 @@ import (
 )
 
 var (
-	// ErrNoMoreMove is returned when there are no available moves on the current iteration.
+	// ErrNoMoreMoves is returned when there are no available moves on the current iteration.
 	ErrNoMoreMoves = errors.New("no more moves")
 	// ErrMissingIteration is returned when a required iteration is missing.
 	ErrMissingIteration = errors.New("missing iteration")
-	// ErrInvalidPuzzleSide is returned when the puzzle size or section size cannot be calculated.
+	// ErrInvalidPuzzleSize is returned when the puzzle size or section size cannot be calculated.
 	ErrInvalidPuzzleSize = errors.New("invalid puzzle size")
 )
 
