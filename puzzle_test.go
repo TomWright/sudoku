@@ -6,6 +6,20 @@ import (
 	"testing"
 )
 
+func BenchmarkPuzzle_Solve(b *testing.B) {
+	input := []int{
+		0, 0, 0, 3,
+		0, 0, 0, 2,
+		3, 0, 0, 0,
+		4, 0, 0, 0,
+	}
+	for i := 0; i <= b.N; i++ {
+		p, _ := NewPuzzle(input)
+		_ = p.Solve()
+		_, _ = p.Result()
+	}
+}
+
 func ExamplePuzzle_Solve() {
 	input := []int{
 		0, 0, 0, 3,
@@ -95,8 +109,6 @@ func TestPuzzle_Solve(t *testing.T) {
 	})
 
 	t.Run("9x9", func(t *testing.T) {
-		const sectionSize = 3
-		const puzzleSize = 9
 		tests := []def{
 			{
 				Exp: []int{
