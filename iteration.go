@@ -10,20 +10,24 @@ type iteration struct {
 	puzzleSize  int
 	sectionSize int
 	cells       group
-	rows        groups
-	columns     groups
-	sections    groups
+	rows        [][]int
+	columns     [][]int
+	sections    [][]int
 }
 
 // newIteration returns a new iteration with the given items.
 func newIteration(items []int, puzzleSize int, sectionSize int) *iteration {
+	rows := make([][]int, puzzleSize)
+	columns := make([][]int, puzzleSize)
+	sections := make([][]int, puzzleSize)
+
 	it := &iteration{
 		puzzleSize:  puzzleSize,
 		sectionSize: sectionSize,
 		cells:       make(group, len(items)),
-		rows:        make(groups, puzzleSize),
-		columns:     make(groups, puzzleSize),
-		sections:    make(groups, puzzleSize),
+		rows:        rows,
+		columns:     columns,
+		sections:    sections,
 	}
 	for i, item := range items {
 		c := cell{
@@ -35,21 +39,21 @@ func newIteration(items []int, puzzleSize int, sectionSize int) *iteration {
 
 		rowIndex := getRowFromIndex(c.index, it.puzzleSize)
 		if it.rows[rowIndex] == nil {
-			it.rows[rowIndex] = make(group, 0, it.puzzleSize)
+			it.rows[rowIndex] = make([]int, 0, it.puzzleSize)
 		}
-		it.rows[rowIndex] = append(it.rows[rowIndex], &c)
+		it.rows[rowIndex] = append(it.rows[rowIndex], c.index)
 
 		columnIndex := getColumnFromIndex(c.index, it.puzzleSize)
 		if it.columns[columnIndex] == nil {
-			it.columns[columnIndex] = make(group, 0, it.puzzleSize)
+			it.columns[columnIndex] = make([]int, 0, it.puzzleSize)
 		}
-		it.columns[columnIndex] = append(it.columns[columnIndex], &c)
+		it.columns[columnIndex] = append(it.columns[columnIndex], c.index)
 
 		sectionIndex := getSectionFromIndex(c.index, it.puzzleSize, it.sectionSize)
 		if it.sections[sectionIndex] == nil {
-			it.sections[sectionIndex] = make(group, 0, it.puzzleSize)
+			it.sections[sectionIndex] = make([]int, 0, it.puzzleSize)
 		}
-		it.sections[sectionIndex] = append(it.sections[sectionIndex], &c)
+		it.sections[sectionIndex] = append(it.sections[sectionIndex], c.index)
 	}
 	return it
 }
@@ -63,47 +67,20 @@ func (i *iteration) items() []int {
 	return res
 }
 
-// copy returns a copy of the iteration.
-func (i *iteration) copy() *iteration {
+// iterate returns a iterate of the iteration.
+func (i *iteration) iterate() *iteration {
 	it := &iteration{
 		puzzleSize:  i.puzzleSize,
 		sectionSize: i.sectionSize,
 		cells:       make(group, len(i.cells)),
-		rows:        make(groups, i.puzzleSize),
-		columns:     make(groups, i.puzzleSize),
-		sections:    make(groups, i.puzzleSize),
+		rows:        i.rows,
+		columns:     i.columns,
+		sections:    i.sections,
 		minValue:    1,
-		index:       i.index,
+		index:       i.index + 1,
 	}
 	for i, item := range i.cells {
-		c := cell{
-			fixed: item.fixed,
-			value: item.value,
-			index: i,
-		}
-		it.cells[i] = &c
-	}
-
-	it.rows = make([]group, len(i.rows))
-	for i, row := range i.rows {
-		it.rows[i] = make(group, len(row))
-		for ci, c := range row {
-			it.rows[i][ci] = it.cells[c.index]
-		}
-	}
-	it.columns = make([]group, len(i.columns))
-	for i, column := range i.columns {
-		it.columns[i] = make(group, len(column))
-		for ci, c := range column {
-			it.columns[i][ci] = it.cells[c.index]
-		}
-	}
-	it.sections = make([]group, len(i.sections))
-	for i, section := range i.sections {
-		it.sections[i] = make(group, len(section))
-		for ci, c := range section {
-			it.sections[i][ci] = it.cells[c.index]
-		}
+		it.cells[i] = item.copy()
 	}
 	return it
 }
@@ -125,11 +102,7 @@ func (i *iteration) solve() error {
 		return nil
 	}
 
-	row := i.rows[getRowFromIndex(cell.index, i.puzzleSize)]
-	column := i.columns[getColumnFromIndex(cell.index, i.puzzleSize)]
-	section := i.sections[getSectionFromIndex(cell.index, i.puzzleSize, i.sectionSize)]
-
-	nextValue, err := i.findNextValue(row, column, section, i.minValue)
+	nextValue, err := i.findNextValue(cell, i.minValue)
 	if err != nil {
 		return err
 	}
@@ -138,25 +111,26 @@ func (i *iteration) solve() error {
 	return nil
 }
 
-func (i *iteration) findNextValue(row group, column group, section group, minValue int) (int, error) {
+func (i *iteration) findNextValue(cell *cell, minValue int) (int, error) {
 	usedMap := map[int]bool{}
-	for _, usedValue := range row.usedValues() {
-		if usedMap[usedValue] {
+
+	for _, cellIndex := range i.rows[getRowFromIndex(cell.index, i.puzzleSize)] {
+		if usedMap[i.cells[cellIndex].value] || i.cells[cellIndex].value < minValue {
 			continue
 		}
-		usedMap[usedValue] = true
+		usedMap[i.cells[cellIndex].value] = true
 	}
-	for _, usedValue := range column.usedValues() {
-		if usedMap[usedValue] {
+	for _, cellIndex := range i.columns[getColumnFromIndex(cell.index, i.puzzleSize)] {
+		if usedMap[i.cells[cellIndex].value] || i.cells[cellIndex].value < minValue {
 			continue
 		}
-		usedMap[usedValue] = true
+		usedMap[i.cells[cellIndex].value] = true
 	}
-	for _, usedValue := range section.usedValues() {
-		if usedMap[usedValue] {
+	for _, cellIndex := range i.sections[getSectionFromIndex(cell.index, i.puzzleSize, i.sectionSize)] {
+		if usedMap[i.cells[cellIndex].value] || i.cells[cellIndex].value < minValue {
 			continue
 		}
-		usedMap[usedValue] = true
+		usedMap[i.cells[cellIndex].value] = true
 	}
 
 	for value := minValue; value <= i.puzzleSize; value++ {

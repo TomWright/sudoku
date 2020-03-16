@@ -62,9 +62,7 @@ func (p *Puzzle) revert() error {
 
 // next moves on to the next iteration.
 func (p *Puzzle) next() error {
-	nextIteration := p.currentIteration.copy()
-	nextIteration.index++
-	nextIteration.minValue = 1
+	nextIteration := p.currentIteration.iterate()
 	p.lastIteration = p.currentIteration
 	p.currentIteration = nextIteration
 	p.iterations = append(p.iterations, p.currentIteration)
