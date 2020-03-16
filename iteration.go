@@ -95,6 +95,23 @@ func (i *iteration) finished() bool {
 	return true
 }
 
+// completionRate returns the number of completed non-fixed cells in the iteration.
+func (i *iteration) completionRate() *CompletionRate {
+	res := new(CompletionRate)
+	res.CellIndex = i.index
+	res.MinValueAtCell = i.minValue
+	for _, c := range i.cells {
+		res.TotalCells++
+		if c.fixed {
+			res.FixedCells++
+		}
+		if c.value > 0 {
+			res.FilledCells++
+		}
+	}
+	return res
+}
+
 // solve attempts to solve the current iteration.
 func (i *iteration) solve() error {
 	for cellIndex := i.index; ; cellIndex++ {
