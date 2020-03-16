@@ -182,7 +182,7 @@ func TestPuzzle_Solve(t *testing.T) {
 					6, 9, 5, 4, 1, 7, 3, 8, 2,
 				},
 			},
-			/*{
+			{
 				Exp: []int{
 					4, 8, 3, 9, 2, 1, 6, 5, 7,
 					9, 6, 7, 3, 4, 5, 8, 2, 1,
@@ -229,7 +229,7 @@ func TestPuzzle_Solve(t *testing.T) {
 					0, 2, 0, 0, 4, 7, 8, 9, 3,
 					0, 4, 9, 0, 0, 0, 0, 0, 5,
 				},
-			},*/
+			},
 		}
 		for k, tc := range tests {
 			t.Run(fmt.Sprint(k), run(tc.In, tc.Exp))

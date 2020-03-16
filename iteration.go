@@ -97,18 +97,21 @@ func (i *iteration) finished() bool {
 
 // solve attempts to solve the current iteration.
 func (i *iteration) solve() error {
-	cell := i.cells[i.index]
-	if cell.fixed {
+	for cellIndex := i.index; ; cellIndex++ {
+		cell := i.cells[cellIndex]
+		if cell.fixed {
+			continue
+		}
+		i.index = cellIndex
+
+		nextValue, err := i.findNextValue(cell, i.minValue)
+		if err != nil {
+			return err
+		}
+		i.minValue = nextValue
+		cell.value = nextValue
 		return nil
 	}
-
-	nextValue, err := i.findNextValue(cell, i.minValue)
-	if err != nil {
-		return err
-	}
-	i.minValue = nextValue
-	cell.value = nextValue
-	return nil
 }
 
 func (i *iteration) findNextValue(cell *cell, minValue int) (int, error) {

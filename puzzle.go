@@ -38,6 +38,10 @@ type Puzzle struct {
 
 // revert reverts back to the most recent applicable iteration.
 func (p *Puzzle) revert() error {
+	if p.lastIteration == nil {
+		return ErrMissingIteration
+	}
+
 	// remove the last iteration.
 	p.iterations = p.iterations[:len(p.iterations)-1]
 	iterationsLen := len(p.iterations)
@@ -66,6 +70,7 @@ func (p *Puzzle) next() error {
 	p.lastIteration = p.currentIteration
 	p.currentIteration = nextIteration
 	p.iterations = append(p.iterations, p.currentIteration)
+
 	return nil
 }
 
