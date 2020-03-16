@@ -22,10 +22,10 @@ jobs:
             asset_name: sudoku_macos_amd64
 
     steps:
-      - uses: hecrj/setup-rust-action@v1-release
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2-beta
         with:
-          rust-version: stable
-      - uses: actions/checkout@v1
+          go-version: '^1.13.4' # The Go version to download (if necessary) and use.
       - name: Build
         run: go build -o target/release/${{ matrix.artifact_name }} ./cmd/sudoku
       - name: Upload binaries to release
