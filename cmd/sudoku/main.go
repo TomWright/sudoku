@@ -13,6 +13,7 @@ import (
 	"time"
 )
 
+// MonitorCompletionRateInterval defines how often we should check the status of the puzzle.
 const MonitorCompletionRateInterval = time.Millisecond * 200
 
 func main() {
